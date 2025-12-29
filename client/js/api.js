@@ -10,14 +10,13 @@ const API_BASE_URL = (() => {
   const isLocalhost =
     window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-  // 💻 LOKALE ENTWICKLUNG → Express Backend auf Port 5001
+  // 💻 LOKAL → Express Backend auf 5001
   if (isLocalhost) {
     return "http://localhost:5001/api";
   }
 
-  // 🌐 DEPLOYED FRONTEND → immer dein Render-Backend nutzen
-  // (Du hast bestätigt: https://forchampions.onrender.com ist dein Backend!)
-  return "https://forchampions.onrender.com/api";
+  // 🌐 PROD → Render Backend
+  return "https://champsback.onrender.com/api";
 })();
 
 // ===============================================================
