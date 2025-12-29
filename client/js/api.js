@@ -30,32 +30,44 @@ let currentUser = null;
 // Turnier erstellen
 // ===============================================================
 export async function createTournament(tournamentData) {
-  try {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    const response = await fetch(`${API_BASE_URL}/tournaments`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(tournamentData),
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Fehler beim Erstellen des Turniers");
-    }
-
-    const tournament = await response.json();
-    currentTournament = tournament;
-    window.tournamentData = tournament;
-    localStorage.setItem("currentTournamentId", tournament._id);
-    return tournament;
-  } catch (error) {
-    console.error("❌ Fehler beim Turnier-Erstellen:", error);
-    throw error;
+  // 1) Token prüfen
+  if (!token || token === "null" || token === "undefined") {
+    throw new Error("Nicht eingeloggt: Token fehlt. Bitte neu einloggen.");
   }
+
+  // 2) JWT-Heuristik (optional, aber super hilfreich)
+  if (!token.startsWith("eyJ")) {
+    throw new Error("Token sieht nicht wie ein JWT aus. Bitte neu einloggen.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/tournaments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(tournamentData),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    let msg = "Fehler beim Erstellen des Turniers";
+    try {
+      const json = JSON.parse(text);
+      msg = json.message || msg;
+    } catch {
+      if (text) msg = text;
+    }
+    throw new Error(msg);
+  }
+
+  const tournament = await response.json();
+  currentTournament = tournament;
+  window.tournamentData = tournament;
+  localStorage.setItem("currentTournamentId", tournament._id);
+  return tournament;
 }
 
 // ===============================================================
